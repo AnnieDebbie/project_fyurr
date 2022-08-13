@@ -10,4 +10,4 @@ DEBUG = True
 
 
 # TODO IMPLEMENT DATABASE URL
-SQLALCHEMY_DATABASE_URI = '<Put your local database url>'
+SQLALCHEMY_DATABASE_URI = 'postgres://wfurfzsc:30RE11gWkgkmw3_pfSRU9xzlfLU0Bh2h@stampy.db.elephantsql.com/wfurfzsc'
