@@ -29,8 +29,9 @@ migrate = Migrate(app, db)
 # Models.
 #----------------------------------------------------------------------------#
 
+
 class Venue(db.Model):
-    __tablename__ = 'Venue'
+    __tablename__ = 'venues'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
