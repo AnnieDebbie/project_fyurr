@@ -4,6 +4,7 @@
 
 from distutils.log import error
 import imp
+from itertools import count
 import json
 import dateutil.parser
 import babel
@@ -17,6 +18,7 @@ from flask_wtf import Form
 from forms import *
 from datetime import datetime
 import os
+from sqlalchemy.ext.associationproxy import association_proxy
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -34,6 +36,7 @@ migrate = Migrate(app, db)
 #----------------------------------------------------------------------------#
 now = datetime.now()
 
+
 class Venue(db.Model):
     __tablename__ = 'venues'
 
@@ -49,10 +52,11 @@ class Venue(db.Model):
     seeking_talent = db.Column(db.Boolean)
     seeking_description = db.Column(db.String(150))
     genres = db.Column(db.String)
-    shows = db.relationship('Show', backref='venue', lazy='dynamic')
+    shows = db.relationship('Show', backref='VenueShows', lazy='dynamic')
 
     def past_shows(self):
         return self.shows.filter(Show.start_time < now)
+
     def upcoming_shows(self):
         return self.shows.filter(Show.start_time > now)
 
@@ -72,11 +76,13 @@ class Artist(db.Model):
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     seeking_venue = db.Column(db.Boolean(True))
-    seeking_description = db.Column(db.String(150))
-    shows = db.relationship('Show', backref='artist',
+    seeking_description = db.Column(db.String(250))
+    shows = db.relationship('Show', backref='ArtistShows',
                             lazy='dynamic', cascade='delete-orphan')
+
     def past_shows(self):
         return self.shows.filter(Show.start_time < now)
+
     def upcoming_shows(self):
         return self.shows.filter(Show.start_time > now)
 
@@ -91,8 +97,10 @@ class Show(db.Model):
     start_time = db.Column(db.DateTime())
     artist_id = db.Column(db.Integer, db.ForeignKey('artists.id'))
     venue_id = db.Column(db.Integer, db.ForeignKey('venues.id'))
-    venue = db.relationship('Venue', backref=db.backref('shows', lazy=True))
-    artist = db.relationship('Artist', backref=db.backref('shows', lazy=True))
+    artist = db.relationship('Artist', backref='ShowArtist', )
+    venue = db.relationship('Venue', backref='ShowVenue', )
+    artist_name = association_proxy('artist', 'name')
+    venue_name = association_proxy('venue', 'name')
 
 #----------------------------------------------------------------------------#
 # Filters.
