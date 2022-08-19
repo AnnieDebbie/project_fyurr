@@ -108,7 +108,7 @@ class Show(db.Model):
 
 
 def format_datetime(value, format='medium'):
-    date = dateutil.parser.parse(value)
+    date = dateutil.parser.parse(str(value))
     if format == 'full':
         format = "EEEE MMMM, d, y 'at' h:mma"
     elif format == 'medium':
@@ -178,13 +178,12 @@ def show_venue(venue_id):
     past_shows = venue.past_shows()
     upcoming_shows = venue.upcoming_shows()
 
-
     data = {
-        **venue,
+        **venue.__dict__,
         "past_shows": past_shows,
         "upcoming_shows": upcoming_shows,
-        "past_shows_count": len(past_shows),
-        "upcoming_shows_count": len(upcoming_shows),
+        "past_shows_count": past_shows.count(),
+        "upcoming_shows_count": upcoming_shows.count(),
     }
     return render_template('pages/show_venue.html', venue=data)
 
@@ -271,7 +270,7 @@ def search_artists():
     search_term = request.form.get("search_term", "")
     search = "%{}%".format(search_term)
     artists = Artist.query.filter(Artist.name.ilike(search)).all()
-    count_ = len(artist)
+    count_ = len(artists)
     response = {
         'count': count_,
         'data': []
@@ -300,8 +299,8 @@ def show_artist(artist_id):
         **artist,
         "past_shows": past_shows,
         "upcoming_shows": upcoming_shows,
-        "past_shows_count": len(past_shows),
-        "upcoming_shows_count": len(upcoming_shows)
+        "past_shows_count": past_shows.count(),
+        "upcoming_shows_count": upcoming_shows.count()
     }
 
     return render_template('pages/show_artist.html', artist=data)
