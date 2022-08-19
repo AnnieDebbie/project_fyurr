@@ -429,9 +429,10 @@ def create_artist_submission():
 
 @app.route('/shows')
 def shows():
-  # displays list of shows at /shows
-  data = Show.query.all()
-  return render_template('pages/shows.html', shows=data)
+    # displays list of shows at /shows
+    data = Show.query.all()
+    return render_template('pages/shows.html', shows=data)
+
 
 @app.route('/shows/create')
 def create_shows():
@@ -442,11 +443,14 @@ def create_shows():
 
 @app.route('/shows/create', methods=['POST'])
 def create_show_submission():
-  # called to create new shows in the db, upon submitting new show listing form
-  # TODO: insert form data as a new Show record in the db, instead
-  show = ShowForm()
-  if show.validate_on_submit():
-    pass
+    form = ShowForm()
+    # called to create new shows in the db, upon submitting new show listing form
+    # TODO: insert form data as a new Show record in the db, instead
+    show = Show(
+        start_time=form.start_time.data,
+        artist_id=form.artist_id.data,
+        venue_id=form.venue_id.data
+    )
 
 
 @app.errorhandler(404)
