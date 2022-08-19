@@ -480,7 +480,8 @@ if not app.debug:
 
 # Default port:
 if __name__ == '__main__':
-    app.run()
+    port = int(os.environ.get('PORT', 4000))
+    app.run(port=port)
 
 # Or specify port manually:
 '''
