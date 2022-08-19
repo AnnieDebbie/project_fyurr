@@ -2,10 +2,12 @@
 # Imports
 #----------------------------------------------------------------------------#
 
+from distutils.log import error
+import imp
 import json
 import dateutil.parser
 import babel
-from flask import Flask, render_template, request, Response, flash, redirect, url_for
+from flask import Flask, render_template, request, Response, flash, redirect, url_for, jsonify, abort
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -14,6 +16,7 @@ from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
 from datetime import datetime
+import os
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -45,18 +48,14 @@ class Venue(db.Model):
     facebook_link = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean)
     seeking_description = db.Column(db.String(150))
-    past_shows_count = db.Column(db.Integer)
-    upcoming_shows_count = db.Column(db.Integer)#is this supposed to be a count fn?
-    # genres = db.Column()
-    # upcoming_shows = db.Column()
-    # past_shows=db.Column() this guy has a relationship with the artist table
-    shows = db.relationship('Show', backref='Venue', lazy=True)
+    genres = db.Column(db.String)
+    shows = db.relationship('Show', backref='venue', lazy=True)
 
 # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 
 class Artist(db.Model):
-    __tablename__ = 'Artist'
+    __tablename__ = 'artists'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
@@ -64,19 +63,25 @@ class Artist(db.Model):
     state = db.Column(db.String(120))
     phone = db.Column(db.String(120))
     genres = db.Column(db.String(120))
+    website = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
-    shows =  db.relationship('Show', backref='Artist', lazy=True)
+    seeking_venue = db.Column(db.Boolean(True))
+    seeking_description = db.Column(db.String(150))
+    shows = db.relationship('Show', backref='artist',
+                            lazy=True, cascade='delete-orphan')
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 # TODO: Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+
+
 class Show(db.Model):
-  __tablename__ = 'Show'
-  id = db.Column(db.Integer, primary_key=True)
-  artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'))
-  venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'))
-  start_time = db.Column(db.DateTime())
+    __tablename__ = 'shows'
+    id = db.Column(db.Integer, primary_key=True)
+    start_time = db.Column(db.DateTime())
+    artist_id = db.Column(db.Integer, db.ForeignKey('artists.id'))
+    venue_id = db.Column(db.Integer, db.ForeignKey('venues.id'))
 
 #----------------------------------------------------------------------------#
 # Filters.
