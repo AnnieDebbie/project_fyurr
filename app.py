@@ -291,12 +291,11 @@ def search_artists():
 def show_artist(artist_id):
     # shows the artist page with the given artist_id
     # TODO: replace with real artist data from the artist table, using artist_id
-    now = datetime.now()
-    artist = Artist.query.filter(artist_id)
+    artist = Artist.query.get(artist_id)
     past_shows = artist.past_shows()
     upcoming_shows = artist.upcoming_shows()
     data = {
-        **artist,
+        **artist.__dict__,
         "past_shows": past_shows,
         "upcoming_shows": upcoming_shows,
         "past_shows_count": past_shows.count(),
@@ -312,32 +311,19 @@ def show_artist(artist_id):
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
     form = ArtistForm()
-    artist = Artist.query.filter(artist_id)
+    artist = Artist.query.get(artist_id)
     form.name.data = artist.name
     form.city.data = artist.city
     form.state.data = artist.state
     form.phone.data = artist.phone
     form.image_link.data = artist.image_link
-    form.genres.data = artist.genres
+    form.genres.data = artist.genres.split(',')
     form.facebook_link.data = artist.facebook_link
-    form.website_link.data = artist.website_link
+    form.website_link.data = artist.website
     form.seeking_venue.data = artist.seeking_venue
     form.seeking_description.data = artist.seeking_description
     # form.genres.data=artist.genres
 
-    artist = {
-        "id": 4,
-        "name": "Guns N Petals",
-        "genres": ["Rock n Roll"],
-        "city": "San Francisco",
-        "state": "CA",
-        "phone": "326-123-5000",
-        "website": "https://www.gunsnpetalsband.com",
-        "facebook_link": "https://www.facebook.com/GunsNPetals",
-        "seeking_venue": True,
-        "seeking_description": "Looking for shows to perform at in the San Francisco Bay Area!",
-        "image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80"
-    }
     # TODO: populate form with fields from artist with ID <artist_id>
     return render_template('forms/edit_artist.html', form=form, artist=artist)
 
@@ -365,16 +351,17 @@ def edit_artist_submission(artist_id):
 def edit_venue(venue_id):
     form = VenueForm()
 
-    venue = Venue.query.filter(venue_id)
+    venue = Venue.query.get(venue_id)
     form.name.data = venue.name
     form.city.data = venue.city
     form.state.data = venue.state
     form.phone.data = venue.phone
+    form.address.data = venue.address
     form.image_link.data = venue.image_link
     form.genres.data = venue.genres
     form.facebook_link.data = venue.facebook_link
-    form.website_link.data = venue.website_link
-    form.seeking_talent.data = venue.seeking_venue
+    form.website_link.data = venue.website
+    form.seeking_talent.data = venue.seeking_talent
     form.seeking_description.data = venue.seeking_description
 
     # TODO: populate form with values from venue with ID <venue_id>
@@ -413,7 +400,6 @@ def create_artist_submission():
         artist = Artist(
             name=request.form.get("name"),
             genres=", ".join(request.form.getlist("genres")),
-            address=request.form.get("address"),
             city=request.form.get("city"),
             state=request.form.get("state"),
             phone=request.form.get("phone"),
@@ -429,7 +415,7 @@ def create_artist_submission():
         db.session.commit()
         flash('Artist ' + request.form['name'] + ' was successfully listed!')
     except:
-        flash('An error occurred. Venue ' +
+        flash('An error occurred. Artist ' +
               request.form.get("name") + ' could not be listed.')
 
     # TODO: modify data to be the data object returned from db insertion
