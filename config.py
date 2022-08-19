@@ -13,4 +13,4 @@ DEBUG = True
 
 
 # TODO IMPLEMENT DATABASE URL
-SQLALCHEMY_DATABASE_URI = f'postgresql://postgres:{PASSWORD}@localhost:5432/fyurrapp'
+SQLALCHEMY_DATABASE_URI = f'postgresql://wfurfzsc:30RE11gWkgkmw3_pfSRU9xzlfLU0Bh2h@stampy.db.elephantsql.com/wfurfzsc'
