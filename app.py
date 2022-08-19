@@ -32,7 +32,7 @@ migrate = Migrate(app, db)
 #----------------------------------------------------------------------------#
 # Models.
 #----------------------------------------------------------------------------#
-
+now = datetime.now()
 
 class Venue(db.Model):
     __tablename__ = 'venues'
@@ -49,7 +49,12 @@ class Venue(db.Model):
     seeking_talent = db.Column(db.Boolean)
     seeking_description = db.Column(db.String(150))
     genres = db.Column(db.String)
-    shows = db.relationship('Show', backref='venue', lazy=True)
+    shows = db.relationship('Show', backref='venue', lazy='dynamic')
+
+    def past_shows(self):
+        return self.shows.filter(Show.start_time < now)
+    def upcoming_shows(self):
+        return self.shows.filter(Show.start_time > now)
 
 # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -69,7 +74,11 @@ class Artist(db.Model):
     seeking_venue = db.Column(db.Boolean(True))
     seeking_description = db.Column(db.String(150))
     shows = db.relationship('Show', backref='artist',
-                            lazy=True, cascade='delete-orphan')
+                            lazy='dynamic', cascade='delete-orphan')
+    def past_shows(self):
+        return self.shows.filter(Show.start_time < now)
+    def upcoming_shows(self):
+        return self.shows.filter(Show.start_time > now)
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -82,6 +91,8 @@ class Show(db.Model):
     start_time = db.Column(db.DateTime())
     artist_id = db.Column(db.Integer, db.ForeignKey('artists.id'))
     venue_id = db.Column(db.Integer, db.ForeignKey('venues.id'))
+    venue = db.relationship('Venue', backref=db.backref('shows', lazy=True))
+    artist = db.relationship('Artist', backref=db.backref('shows', lazy=True))
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -155,12 +166,10 @@ def search_venues():
 def show_venue(venue_id):
     # shows the venue page with the given venue_id
     # TODO: replace with real venue data from the venues table, using venue_id
-    now = datetime.now()
     venue = Venue.query.get(venue_id)
-    past_shows = venue.shows.filter(Show.start_time < now)
-    upcoming_shows = venue.shows.filter(Show.start_time >= now)
+    past_shows = venue.past_shows()
+    upcoming_shows = venue.upcoming_shows()
 
-    print(venue)
 
     data = {
         **venue,
@@ -277,8 +286,8 @@ def show_artist(artist_id):
     # TODO: replace with real artist data from the artist table, using artist_id
     now = datetime.now()
     artist = Artist.query.filter(artist_id)
-    past_shows = artist.shows.filter(Show.start_time < now)
-    upcoming_shows = artist.shows.filter(Show.start_time >= now)
+    past_shows = artist.past_shows()
+    upcoming_shows = artist.upcoming_shows()
     data = {
         **artist,
         "past_shows": past_shows,
