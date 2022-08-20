@@ -201,29 +201,30 @@ def create_venue_form():
 def create_venue_submission():
     # TODO: insert form data as a new Venue record in the db, instead
     # TODO: modify data to be the data object returned from db insertion
+    form = VenueForm(request.form)
 
-    try:
+ 
+    if form.validate_on_submit():
         venue = Venue(
-            name=request.form.get("name"),
-            genres=", ".join(request.form.getlist("genres")),
-            address=request.form.get("address"),
-            city=request.form.get("city"),
-            state=request.form.get("state"),
-            phone=request.form.get("phone"),
-            facebook_link=request.form.get("facebook_link"),
-            image_link=request.form.get("image_link"),
-            website=request.form.get("website_link"),
-            seeking_talent=(True if request.form.get("seeking_talent") != None else False
+            name=form.name.data,
+            genres=", ".join(form.genres.data),
+            address=form.address.data,
+            city=form.city.data,
+            state=form.state.data,
+            phone=form.phone.data,
+            facebook_link=form.facebook_link.data,
+            image_link=form.image_link.data,
+            website=form.website_link.data,
+            seeking_talent=(True if form.seeking_talent.data != None else False
                             ),
-            seeking_description=request.form.get("seeking_description")
+            seeking_description=form.seeking_description.data
 
         )
         db.session.add(venue)
         db.session.commit()
         flash('Venue ' + request.form['name'] + ' was successfully listed!')
-    except Exception as e:
-        flash('An error occurred. Venue ' +
-              request.form.get("name") + ' could not be listed.', e)
+    else:
+        flash( form.errors.items[0][1])
 
     # on successful db insert, flash success
     # TODO: on unsuccessful db insert, flash an error instead.
@@ -332,18 +333,23 @@ def edit_artist(artist_id):
 def edit_artist_submission(artist_id):
     # TODO: take values from the form submitted, and update existing
     # artist record with ID <artist_id> using the new attributes
-    form = ArtistForm()
-    artist = Artist.query.get(artist_id)
-    artist.name = form.name.data
-    artist.city = form.city.data
-    artist.state = form.state.data
-    artist.phone = form.phone.data
-    artist.genres = form.genres.data
-    artist.facebook_link = form.facebook_link.data
-    artist.image_link = form.image_link.data
-    artist.seeking_description = form.seeking_description.data
-    artist.seeking_venue = form.seeking_venue.data
-
+    form = ArtistForm(request.form)
+    if form.validate_on_submit():
+        artist = Artist.query.get(artist_id)
+        artist.name = form.name.data
+        artist.city = form.city.data
+        artist.state = form.state.data
+        artist.phone = form.phone.data
+        artist.genres = form.genres.data
+        artist.facebook_link = form.facebook_link.data
+        artist.image_link = form.image_link.data
+        artist.seeking_description = form.seeking_description.data
+        artist.seeking_venue = form.seeking_venue.data
+        db.session.add(artist)
+        db.session.commit()
+        flash(f'{artist.name} editted successfully')
+    else:
+        flash(f'{form.errors.items[0][1]}')
     return redirect(url_for('show_artist', artist_id=artist_id))
 
 
@@ -370,7 +376,25 @@ def edit_venue(venue_id):
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
 def edit_venue_submission(venue_id):
-
+    venue = Venue.query.get(venue_id)
+    form = VenueForm(request.form)
+    if form.validate_on_submit():
+        venue.name = form.name.data 
+        venue.city = form.city.data 
+        venue.state = form.state.data 
+        venue.phone = form.phone.data 
+        venue.address = form.address.data 
+        venue.image_link = form.image_link.data 
+        venue.genres = form.genres.data 
+        venue.facebook_link = form.facebook_link.data 
+        venue.website = form.website_link.data 
+        venue.seeking_talent = form.seeking_talent.data 
+        venue.seeking_description = form.seeking_description.data 
+        db.session.add(venue)
+        db.session.commit()
+        flash(f'{venue.name} editted successfully' )
+    else:
+        flash(form.errors.items[0][1])
     # TODO: take values from the form submitted, and update existing
     # venue record with ID <venue_id> using the new attributes
     return redirect(url_for('show_venue', venue_id=venue_id))
@@ -395,28 +419,27 @@ def create_artist_form():
 def create_artist_submission():
     # called upon submitting the new artist listing form
     # TODO: insert form data as a new Venue record in the db, instead
-
-    try:
+    form = ArtistForm(request.form)
+    if form.validate_on_submit():
         artist = Artist(
-            name=request.form.get("name"),
-            genres=", ".join(request.form.getlist("genres")),
-            city=request.form.get("city"),
-            state=request.form.get("state"),
-            phone=request.form.get("phone"),
-            facebook_link=request.form.get("facebook_link"),
-            image_link=request.form.get("image_link"),
-            website=request.form.get("website_link"),
-            seeking_venue=(True if request.form.get("seeking_venue") != None else False
+            name=form.name.data,
+            genres=", ".join(form.genres.data),
+            city=form.city.data,
+            state=form.state.data,
+            phone=form.phone.data,
+            facebook_link=form.facebook_link.data,
+            image_link=form.image_link.data,
+            website=form.website_link.data,
+            seeking_venue=(True if form.seeking_venue.data != None else False
                            ),
-            seeking_description=request.form.get("seeking_description")
+            seeking_description=form.seeking_description.data
 
         )
         db.session.add(artist)
         db.session.commit()
         flash('Artist ' + request.form['name'] + ' was successfully listed!')
-    except:
-        flash('An error occurred. Artist ' +
-              request.form.get("name") + ' could not be listed.')
+    else:
+        flash(form.errors.items[0][1])
 
     # TODO: modify data to be the data object returned from db insertion
 
