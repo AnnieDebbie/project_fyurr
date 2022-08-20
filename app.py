@@ -2,10 +2,12 @@
 # Imports
 #----------------------------------------------------------------------------#
 
+#----------------------------------------------------------------------------#
+# App Config.
+#----------------------------------------------------------------------------#
+
 from distutils.log import error
-import imp
 from itertools import count
-import json
 import dateutil.parser
 import babel
 from flask import Flask, render_template, request, Response, flash, redirect, url_for, jsonify, abort
@@ -14,15 +16,11 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import logging
 from logging import Formatter, FileHandler
-from flask_wtf import Form
+from flask_wtf import FlaskForm as Form
 from forms import *
 from datetime import datetime
 import os
 from sqlalchemy.ext.associationproxy import association_proxy
-#----------------------------------------------------------------------------#
-# App Config.
-#----------------------------------------------------------------------------#
-
 app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
@@ -131,6 +129,7 @@ def index():
 #  Venues
 #  ----------------------------------------------------------------
 
+
 @app.route('/venues')
 def venues():
     # TODO: replace with real venues data.
@@ -203,7 +202,6 @@ def create_venue_submission():
     # TODO: modify data to be the data object returned from db insertion
     form = VenueForm(request.form)
 
- 
     if form.validate_on_submit():
         venue = Venue(
             name=form.name.data,
@@ -224,7 +222,7 @@ def create_venue_submission():
         db.session.commit()
         flash('Venue ' + request.form['name'] + ' was successfully listed!')
     else:
-        flash( form.errors.items[0][1])
+        flash(list(form.errors.items())[0][1][0])
 
     # on successful db insert, flash success
     # TODO: on unsuccessful db insert, flash an error instead.
@@ -349,7 +347,7 @@ def edit_artist_submission(artist_id):
         db.session.commit()
         flash(f'{artist.name} editted successfully')
     else:
-        flash(f'{form.errors.items[0][1]}')
+        flash(list(form.errors.items())[0][1][0])
     return redirect(url_for('show_artist', artist_id=artist_id))
 
 
@@ -378,23 +376,25 @@ def edit_venue(venue_id):
 def edit_venue_submission(venue_id):
     venue = Venue.query.get(venue_id)
     form = VenueForm(request.form)
+
     if form.validate_on_submit():
-        venue.name = form.name.data 
-        venue.city = form.city.data 
-        venue.state = form.state.data 
-        venue.phone = form.phone.data 
-        venue.address = form.address.data 
-        venue.image_link = form.image_link.data 
-        venue.genres = form.genres.data 
-        venue.facebook_link = form.facebook_link.data 
-        venue.website = form.website_link.data 
-        venue.seeking_talent = form.seeking_talent.data 
-        venue.seeking_description = form.seeking_description.data 
+        venue.name = form.name.data
+        venue.city = form.city.data
+        venue.state = form.state.data
+        venue.phone = form.phone.data
+        venue.address = form.address.data
+        venue.image_link = form.image_link.data
+        venue.genres = form.genres.data
+        venue.facebook_link = form.facebook_link.data
+        venue.website = form.website_link.data
+        venue.seeking_talent = form.seeking_talent.data
+        venue.seeking_description = form.seeking_description.data
         db.session.add(venue)
         db.session.commit()
-        flash(f'{venue.name} editted successfully' )
+        flash(f'{venue.name} editted successfully')
     else:
-        flash(form.errors.items[0][1])
+        flash(list(form.errors.items())[0][1][0])
+
     # TODO: take values from the form submitted, and update existing
     # venue record with ID <venue_id> using the new attributes
     return redirect(url_for('show_venue', venue_id=venue_id))
@@ -438,8 +438,9 @@ def create_artist_submission():
         db.session.add(artist)
         db.session.commit()
         flash('Artist ' + request.form['name'] + ' was successfully listed!')
+
     else:
-        flash(form.errors.items[0][1])
+        flash(list(form.errors.items())[0][1][0])
 
     # TODO: modify data to be the data object returned from db insertion
 
