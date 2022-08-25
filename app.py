@@ -137,7 +137,8 @@ def create_venue_submission():
     if form.validate_on_submit():
         venue = Venue(
             name=form.name.data,
-            genres=", ".join(form.genres.data),
+            # genres=", ".join(form.genres.data),
+            genres=request.form.getlist('genres'),
             address=form.address.data,
             city=form.city.data,
             state=form.state.data,
@@ -355,7 +356,7 @@ def create_artist_submission():
     if form.validate_on_submit():
         artist = Artist(
             name=form.name.data,
-            genres=", ".join(form.genres.data),
+            genres=request.form.getlist("genres"),
             city=form.city.data,
             state=form.state.data,
             phone=form.phone.data,
