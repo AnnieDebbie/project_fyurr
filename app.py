@@ -73,7 +73,9 @@ def venues():
         data.append({
             'city': city,
             'state': state,
-            'venues': Venue.query.filter_by(state=state, city=city).all()
+            'venues':
+            [{"id": venue.id, "name": venue.name, 'num_upcoming_shows': venue.shows.count(
+            )} for venue in Venue.query.filter_by(state=state, city=city).all()]
         })
 
     return render_template('pages/venues.html', areas=data)
@@ -106,15 +108,17 @@ def show_venue(venue_id):
     # shows the venue page with the given venue_id
     # TODO: replace with real venue data from the venues table, using venue_id
     venue = Venue.query.get(venue_id)
-    past_shows = venue.past_shows()
-    upcoming_shows = venue.upcoming_shows()
+    past_shows = get_venues_shows(db, venue_id)
+    upcoming_shows = get_venues_shows(db, venue_id, flag=False)
+
+    print("YOOOO!!", past_shows, upcoming_shows)
 
     data = {
         **venue.__dict__,
         "past_shows": past_shows,
         "upcoming_shows": upcoming_shows,
-        "past_shows_count": past_shows.count(),
-        "upcoming_shows_count": upcoming_shows.count(),
+        "past_shows_count": len(past_shows),
+        "upcoming_shows_count": len(upcoming_shows),
     }
     return render_template('pages/show_venue.html', venue=data)
 
@@ -224,14 +228,14 @@ def show_artist(artist_id):
     # shows the artist page with the given artist_id
     # TODO: replace with real artist data from the artist table, using artist_id
     artist = Artist.query.get(artist_id)
-    past_shows = artist.past_shows()
-    upcoming_shows = artist.upcoming_shows()
+    past_shows = get_artists_shows(db, artist_id)
+    upcoming_shows = get_artists_shows(db, artist_id, flag=False)
     data = {
         **artist.__dict__,
         "past_shows": past_shows,
         "upcoming_shows": upcoming_shows,
-        "past_shows_count": past_shows.count(),
-        "upcoming_shows_count": upcoming_shows.count()
+        "past_shows_count": len(past_shows),
+        "upcoming_shows_count": len(upcoming_shows)
     }
 
     return render_template('pages/show_artist.html', artist=data)

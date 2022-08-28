@@ -14,6 +14,7 @@ def create_db(app):
     db.init_app(app)
     migrate = Migrate(app, db, compare_type=True)
 
+
 class Venue(db.Model):
     __tablename__ = 'venues'
 
@@ -31,11 +32,6 @@ class Venue(db.Model):
     genres = db.Column(db.ARRAY(db.String(120)))
     shows = db.relationship('Show', backref='VenueShows', lazy='dynamic')
 
-    def past_shows(self):
-        return self.shows.filter(Show.start_time < now)
-
-    def upcoming_shows(self):
-        return self.shows.filter(Show.start_time > now)
 
 # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -57,12 +53,6 @@ class Artist(db.Model):
     shows = db.relationship('Show', backref='ArtistShows',
                             lazy='dynamic', cascade='delete-orphan')
 
-    def past_shows(self):
-        return self.shows.filter(Show.start_time < now)
-
-    def upcoming_shows(self):
-        return self.shows.filter(Show.start_time > now)
-
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 # TODO: Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
@@ -74,7 +64,34 @@ class Show(db.Model):
     start_time = db.Column(db.DateTime())
     artist_id = db.Column(db.Integer, db.ForeignKey('artists.id'))
     venue_id = db.Column(db.Integer, db.ForeignKey('venues.id'))
-    artist = db.relationship('Artist', backref='ShowArtist', )
-    venue = db.relationship('Venue', backref='ShowVenue', )
-    artist_name = association_proxy('artist', 'name')
-    venue_name = association_proxy('venue', 'name')
+
+
+def get_artists_shows(db, artist_id, flag=True):
+    if flag:
+        shows_query = db.session.query(Show, Artist).filter(
+            Show.artist_id == artist_id).filter(Show.start_time < datetime.now()).all()
+    else:
+        shows_query = db.session.query(Show, Artist).filter(
+            Show.artist_id == artist_id).filter(Show.start_time > datetime.now()).all()
+    shows = []
+
+    for show, artist in shows_query:
+        print(artist.__dict__)
+        shows.append({"artist_id": artist.id,
+                      "artist_name": artist.name, "artist_image_link": artist.image_link, "start_time": show.start_time, })
+    return shows
+
+
+def get_venues_shows(db, venue_id, flag=True):
+    if flag:
+        shows_query = db.session.query(Show, Artist).filter(
+            Show.venue_id == venue_id).filter(Show.start_time < datetime.now()).all()
+    else:
+        shows_query = db.session.query(Show, Artist).filter(
+            Show.venue_id == venue_id).filter(Show.start_time > datetime.now()).all()
+    shows = []
+    for show, artist in shows_query:
+        print(artist.__dict__)
+        shows.append({"artist_id": artist.id,
+                      "artist_name": artist.name, "artist_image_link": artist.image_link, "start_time": show.start_time, })
+    return shows
