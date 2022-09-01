@@ -9,12 +9,6 @@ db = SQLAlchemy()
 now = datetime.now()
 
 
-def create_db(app):
-    db.app = app
-    db.init_app(app)
-    migrate = Migrate(app, db, compare_type=True)
-
-
 class Venue(db.Model):
     __tablename__ = 'venues'
 
@@ -76,7 +70,6 @@ def get_artists_shows(db, artist_id, flag=True):
     shows = []
 
     for show, artist in shows_query:
-        print(artist.__dict__)
         shows.append({"artist_id": artist.id,
                       "artist_name": artist.name, "artist_image_link": artist.image_link, "start_time": show.start_time, })
     return shows
@@ -91,7 +84,6 @@ def get_venues_shows(db, venue_id, flag=True):
             Show.venue_id == venue_id).filter(Show.start_time > datetime.now()).all()
     shows = []
     for show, artist in shows_query:
-        print(artist.__dict__)
         shows.append({"artist_id": artist.id,
                       "artist_name": artist.name, "artist_image_link": artist.image_link, "start_time": show.start_time, })
     return shows

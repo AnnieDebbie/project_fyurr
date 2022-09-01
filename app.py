@@ -22,8 +22,12 @@ from models import *
 
 app = Flask(__name__)
 moment = Moment(app)
-create_db(app)
+
+db.init_app(app)
+
 app.config.from_object('config')
+migrate = Migrate(app, db, compare_type=True)
+
 
 # TODO: connect to a local postgresql database
 
@@ -111,7 +115,6 @@ def show_venue(venue_id):
     past_shows = get_venues_shows(db, venue_id)
     upcoming_shows = get_venues_shows(db, venue_id, flag=False)
 
-    print("YOOOO!!", past_shows, upcoming_shows)
 
     data = {
         **venue.__dict__,
