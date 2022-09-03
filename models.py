@@ -24,7 +24,7 @@ class Venue(db.Model):
     seeking_talent = db.Column(db.Boolean)
     seeking_description = db.Column(db.String(150))
     genres = db.Column(db.ARRAY(db.String(120)))
-    shows = db.relationship('Show', backref='VenueShows', lazy='dynamic')
+    shows = db.relationship('Show', backref='venue', lazy=True)
 
 
 # TODO: implement any missing fields, as a database migration using Flask-Migrate
@@ -44,8 +44,8 @@ class Artist(db.Model):
     facebook_link = db.Column(db.String(120))
     seeking_venue = db.Column(db.Boolean(True))
     seeking_description = db.Column(db.String(250))
-    shows = db.relationship('Show', backref='ArtistShows',
-                            lazy='dynamic', cascade='delete-orphan')
+    shows = db.relationship('Show', backref='artist',
+                            lazy=True, cascade='delete-orphan')
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -62,28 +62,31 @@ class Show(db.Model):
 
 def get_artists_shows(db, artist_id, flag=True):
     if flag:
-        shows_query = db.session.query(Show, Artist).filter(
-            Show.artist_id == artist_id).filter(Show.start_time < datetime.now()).all()
+        shows_query = db.session.query(Show).join(Artist).filter(
+            Show.artist_id == artist_id).filter(Show.start_time < now).all()
+
     else:
-        shows_query = db.session.query(Show, Artist).filter(
-            Show.artist_id == artist_id).filter(Show.start_time > datetime.now()).all()
+        shows_query = db.session.query(Show).join(Artist).filter(
+            Show.artist_id == artist_id).filter(Show.start_time > now).all()
+
     shows = []
 
-    for show, artist in shows_query:
-        shows.append({"artist_id": artist.id,
-                      "artist_name": artist.name, "artist_image_link": artist.image_link, "start_time": show.start_time, })
+    for show in shows_query:
+        shows.append({"artist_id": show.artist.id,
+                      "artist_name": show.artist.name, "artist_image_link": show.artist.image_link, "start_time": show.start_time, })
     return shows
 
 
 def get_venues_shows(db, venue_id, flag=True):
     if flag:
-        shows_query = db.session.query(Show, Artist).filter(
-            Show.venue_id == venue_id).filter(Show.start_time < datetime.now()).all()
+        shows_query = db.session.query(Show).join(Venue).filter(
+            Show.venue_id == venue_id).filter(Show.start_time < now).all()
+
     else:
-        shows_query = db.session.query(Show, Artist).filter(
-            Show.venue_id == venue_id).filter(Show.start_time > datetime.now()).all()
+        shows_query = db.session.query(Show).join(Venue).filter(
+            Show.venue_id == venue_id).filter(Show.start_time > now).all()
     shows = []
-    for show, artist in shows_query:
-        shows.append({"artist_id": artist.id,
-                      "artist_name": artist.name, "artist_image_link": artist.image_link, "start_time": show.start_time, })
+    for show in shows_query:
+        shows.append({"artist_id": show.artist.id,
+                      "artist_name": show.artist.name, "artist_image_link": show.artist.image_link, "start_time": show.start_time, })
     return shows

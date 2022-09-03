@@ -79,7 +79,7 @@ def venues():
             'state': state,
             'venues':
             [{"id": venue.id, "name": venue.name, 'num_upcoming_shows': venue.shows.count(
-            )} for venue in Venue.query.filter_by(state=state, city=city).all()]
+                venue.shows)} for venue in Venue.query.filter_by(state=state, city=city).all()]
         })
 
     return render_template('pages/venues.html', areas=data)
@@ -114,7 +114,6 @@ def show_venue(venue_id):
     venue = Venue.query.get(venue_id)
     past_shows = get_venues_shows(db, venue_id)
     upcoming_shows = get_venues_shows(db, venue_id, flag=False)
-
 
     data = {
         **venue.__dict__,
@@ -231,6 +230,7 @@ def show_artist(artist_id):
     # shows the artist page with the given artist_id
     # TODO: replace with real artist data from the artist table, using artist_id
     artist = Artist.query.get(artist_id)
+
     past_shows = get_artists_shows(db, artist_id)
     upcoming_shows = get_artists_shows(db, artist_id, flag=False)
     data = {
